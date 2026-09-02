@@ -1,0 +1,109 @@
+{% extends 'scheduler/base.html' %}
+
+{% block title %}Master Timetable Export{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Section -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <h2 class="mb-1 text-primary">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Export Master Timetable
+            </h2>
+            <p class="text-muted mb-0">
+                Select a department to download its unified master schedule PDF containing all batches and faculty reference codes.
+            </p>
+        </div>
+        
+        <!-- Quick Search Bar -->
+        <div class="col-md-5 mt-3 mt-md-0">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" id="deptSearchInput" class="form-control border-start-0 ps-0" placeholder="Search department name or code...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Cards Grid -->
+    <div class="row g-3" id="deptCardContainer">
+        {% for d in departments %}
+        <div class="col-md-4 col-lg-3 dept-card-item">
+            <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
+                <div class="card-body d-flex flex-column justify-content-between p-3">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold">
+                                {{ d.code }}
+                            </span>
+                            <small class="text-muted fs-7">
+                                <i class="bi bi-people me-1"></i>{{ d.batch_count|default:d.batches.count }} Batches
+                            </small>
+                        </div>
+                        <h5 class="card-title mb-1 text-dark fw-bold dept-name">{{ d.name }}</h5>
+                    </div>
+
+                    <a href="{% url 'master_pdf_export' %}?department_id={{ d.pk }}" 
+                       class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold">
+                        <i class="bi bi-download"></i>
+                        <span>Download PDF</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center gap-3 p-3 border-0 shadow-sm" role="alert">
+                <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                <div>
+                    <h6 class="alert-heading mb-1 fw-bold">No Departments Found</h6>
+                    <p class="mb-0">Please add departments in the system before generating a master timetable PDF.</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Empty State for Live Filter -->
+    <div id="noMatchMessage" class="alert alert-warning d-none mt-3" role="alert">
+        No departments matched your search term.
+    </div>
+</div>
+
+<!-- Search Filtering Script & Hover Styles -->
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.1) !important;
+    }
+    .transition-all {
+        transition: all 0.2s ease-in-out;
+    }
+</style>
+
+<script>
+    document.getElementById('deptSearchInput').addEventListener('keyup', function() {
+        const query = this.value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.dept-card-item');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            if (text.includes(query)) {
+                card.classList.remove('d-none');
+                visibleCount++;
+            } else {
+                card.classList.add('d-none');
+            }
+        });
+
+        const noMatchMsg = document.getElementById('noMatchMessage');
+        if (visibleCount === 0 && cards.length > 0) {
+            noMatchMsg.classList.remove('d-none');
+        } else {
+            noMatchMsg.classList.add('d-none');
+        }
+    });
+</script>
+{% endblock %}

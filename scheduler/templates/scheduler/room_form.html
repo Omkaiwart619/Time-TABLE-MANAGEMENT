@@ -1,0 +1,26 @@
+{% extends 'scheduler/base.html' %}
+{% block title %}Add Room{% endblock %}
+
+{% block content %}
+<h3>Add Room</h3>
+<form method="POST" class="bg-white p-4 rounded shadow-sm" style="max-width:400px;">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Room Name</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Type</label>
+        <select name="room_type" class="form-control">
+            <option value="classroom">Classroom</option>
+            <option value="lab">Lab</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Capacity (optional)</label>
+        <input type="number" name="capacity" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="{% url 'room_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

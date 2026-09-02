@@ -1,0 +1,51 @@
+{% extends 'scheduler/base.html' %}
+{% load custom_filters %}
+{% block title %}Edit Class{% endblock %}
+
+{% block content %}
+<h3>Edit Class</h3>
+<div class="card shadow-sm" style="max-width:500px;">
+    <div class="card-body">
+        <p><strong>Subject:</strong> {{ entry.subject.name }}</p>
+        <p><strong>Teacher:</strong> {{ entry.teacher.name }}</p>
+        <p><strong>Batch:</strong> {{ entry.batch }}</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Day</label>
+                <select name="day" class="form-control">
+                    {% for d in days %}
+                    <option value="{{ d }}" {% if d == entry.day %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Period</label>
+                <select name="period" class="form-control">
+                    {% for p in periods %}
+                    <option value="{{ p }}" {% if p == entry.period %}selected{% endif %}>
+                        Period {{ p }} ({{ period_times|get_item:p }})
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if entry.subject.is_lab %}
+                <small class="text-warning d-block mt-1">
+                    Note: This subject is a lab (2 consecutive periods). Moving only this row splits it from its pair. Edit both rows individually if moving a full lab block.
+                </small>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Room</label>
+                <select name="room" class="form-control">
+                    {% for r in rooms %}
+                    <option value="{{ r.pk }}" {% if r.pk == entry.room_id %}selected{% endif %}>{{ r.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a href="{% url 'timetable_view' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

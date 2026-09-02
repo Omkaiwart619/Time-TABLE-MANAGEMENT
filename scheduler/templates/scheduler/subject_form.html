@@ -1,0 +1,62 @@
+{% extends 'scheduler/base.html' %}
+{% block title %}Add Subject{% endblock %}
+
+{% block content %}
+<h3>Add Subject</h3>
+<form method="POST" class="bg-white p-4 rounded shadow-sm" style="max-width:450px;">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Subject Name</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Code (optional)</label>
+        <input type="text" name="code" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Department</label>
+        <select name="department" class="form-control" required>
+            {% for d in departments %}
+            <option value="{{ d.pk }}">{{ d.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Batch</label>
+        <select name="batch" class="form-control" required>
+            {% for b in batches %}
+            <option value="{{ b.pk }}">{{ b }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Teacher</label>
+        <select name="teacher" class="form-control" required>
+            {% for t in teachers %}
+            <option value="{{ t.pk }}">{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Classes Per Week</label>
+        <input type="number" name="classes_per_week" class="form-control" value="3" required>
+        <small class="text-muted">Number of weekly periods required.</small>
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" name="is_lab" class="form-check-input" id="isLabCheck">
+        <label class="form-check-label" for="isLabCheck">Is this a Lab subject? (2 consecutive periods)</label>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Required Room</label>
+        <select name="required_room" class="form-control">
+            <option value="">-- Any available room --</option>
+            {% for r in rooms %}
+            <option value="{{ r.pk }}">{{ r.name }} ({{ r.get_room_type_display }})</option>
+            {% endfor %}
+        </select>
+        <small class="text-muted">Set this for labs and any subject with a fixed venue (e.g. Engineering Graphics → F-7).</small>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="{% url 'subject_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

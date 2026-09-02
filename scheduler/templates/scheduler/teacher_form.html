@@ -1,0 +1,41 @@
+{% extends 'scheduler/base.html' %}
+{% block title %}Add Teacher{% endblock %}
+
+{% block content %}
+<h3>Add Teacher</h3>
+<form method="POST" class="bg-white p-4 rounded shadow-sm" style="max-width:450px;">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Teacher Name</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Department</label>
+        <select name="department" class="form-control" required>
+            {% for d in departments %}
+            <option value="{{ d.pk }}">{{ d.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Max Classes Per Week</label>
+        <input type="number" name="max_classes_per_week" class="form-control" value="16" required>
+        <small class="text-muted">Use real weekly workload capacity.</small>
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" name="is_lab_incharge" class="form-check-input" id="labCheck" onchange="document.getElementById('labField').style.display = this.checked ? 'block' : 'none'">
+        <label class="form-check-label" for="labCheck">Is Lab Incharge?</label>
+    </div>
+    <div class="mb-3" id="labField" style="display:none;">
+        <label class="form-label">Assigned Lab</label>
+        <select name="lab_room" class="form-control">
+            <option value="">-- Select Lab --</option>
+            {% for l in labs %}
+            <option value="{{ l.pk }}">{{ l.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="{% url 'teacher_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

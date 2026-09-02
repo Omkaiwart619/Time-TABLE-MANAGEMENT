@@ -1,0 +1,19 @@
+{% extends 'scheduler/base.html' %}
+{% block title %}Add Department{% endblock %}
+
+{% block content %}
+<h3>Add Department</h3>
+<form method="POST" class="bg-white p-4 rounded shadow-sm" style="max-width:400px;">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Code</label>
+        <input type="text" name="code" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="{% url 'department_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'scheduler/base.html' %}
+{% block title %}Batches{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Batches</h3>
+
+    <!-- Live Search Input -->
+    <div style="width: 300px;">
+        <input 
+            type="text" 
+            id="tableSearchInput" 
+            class="form-control" 
+            placeholder="🔍 Search batches..." 
+            onkeyup="filterTable()"
+        >
+    </div>
+
+    <a href="{% url 'batch_add' %}" class="btn btn-primary">+ Add Batch</a>
+</div>
+
+<table class="table table-bordered bg-white" id="dataTable">
+    <thead>
+        <tr>
+            <th>Department</th>
+            <th>Year</th>
+            <th>Section</th>
+            <th>Strength</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in batches %}
+        <tr>
+            <td>{{ b.department.name }}</td>
+            <td>{{ b.year }}</td>
+            <td>{{ b.section }}</td>
+            <td>{{ b.strength|default:"-" }}</td>
+            <td>
+                <a href="{% url 'batch_delete' b.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this batch?')">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr id="emptyRow">
+            <td colspan="5" class="text-center text-muted">No batches yet.</td>
+        </tr>
+        {% endfor %}
+
+        <!-- Row displayed when live search matches zero results -->
+        <tr id="noResultsRow" style="display: none;">
+            <td colspan="5" class="text-center text-muted py-3">No matching batches found.</td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+function filterTable() {
+    const input = document.getElementById("tableSearchInput");
+    const filter = input.value.toLowerCase().trim();
+    const table = document.getElementById("dataTable");
+    
+    // Select only data rows, ignoring empty state or search warning rows
+    const rows = table.querySelectorAll("tbody tr:not(#noResultsRow):not(#emptyRow)");
+    const noResultsRow = document.getElementById("noResultsRow");
+    
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        // Exclude the last column ('Action' delete button) from search matching
+        const cells = Array.from(row.getElementsByTagName("td")).slice(0, -1);
+        const matches = cells.some(cell => cell.textContent.toLowerCase().includes(filter));
+        
+        if (matches) {
+            row.style.display = "";
+            visibleCount++;
+        } else {
+            row.style.display = "none";
+        }
+    });
+
+    if (noResultsRow) {
+        noResultsRow.style.display = (visibleCount === 0 && filter !== "") ? "" : "none";
+    }
+}
+</script>
+{% endblock %}

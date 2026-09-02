@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ label }} — Timetable PDF</title>
+    <style>
+        @page {
+            size: letter landscape;
+            margin: 0.8cm;
+        }
+
+        body { 
+            font-family: Helvetica, Arial, sans-serif; 
+            font-size: 9.5px; 
+            color: #1e293b; 
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Document Header */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #4f46e5;
+        }
+
+        .header-table td {
+            padding-bottom: 6px;
+        }
+
+        .header-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #4f46e5;
+            text-align: left;
+        }
+
+        .header-meta {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0f172a;
+            text-align: right;
+        }
+
+        /* Main Timetable Matrix */
+        table.timetable { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 5px; 
+            table-layout: fixed;
+        }
+
+        table.timetable th, table.timetable td { 
+            border: 1px solid #94a3b8; 
+            padding: 5px 3px; 
+            text-align: center; 
+            vertical-align: middle;
+        }
+
+        table.timetable th { 
+            background-color: #4f46e5; 
+            color: #ffffff; 
+            font-weight: bold; 
+            font-size: 8.5px;
+        }
+
+        .day-header {
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-weight: bold;
+            width: 9%;
+            font-size: 9.5px;
+        }
+
+        .lunch-cell { 
+            background-color: #f1f5f9; 
+            color: #64748b; 
+            font-weight: bold; 
+            font-size: 8px;
+            width: 5.5%;
+        }
+
+        /* Class Block Cards */
+        .card {
+            padding: 3px;
+            border-radius: 3px;
+        }
+
+        .lab { 
+            background-color: #ccfbf1; 
+            border: 1px solid #99f6e4;
+        }
+
+        .theory { 
+            background-color: #dbeafe; 
+            border: 1px solid #bfdbfe;
+        }
+
+        .subject-title {
+            font-weight: bold;
+            color: #0f172a;
+            font-size: 9px;
+            margin-bottom: 2px;
+        }
+
+        .meta-info {
+            color: #334155;
+            font-size: 8px;
+            line-height: 1.1;
+        }
+
+        .room-name {
+            color: #475569;
+            font-size: 7.5px;
+            margin-top: 1px;
+        }
+
+        .empty-slot {
+            color: #cbd5e1;
+            font-style: italic;
+        }
+
+        .footer-note {
+            margin-top: 12px;
+            font-size: 7.5px;
+            color: #94a3b8;
+            text-align: right;
+        }
+
+        .badge-lab {
+            background-color: #0f766e;
+            color: #ffffff;
+            font-size: 6.5px;
+            padding: 1px 3px;
+            border-radius: 2px;
+            display: inline-block;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <table class="header-table">
+        <tr>
+            <td class="header-title">Department of Computer Science &amp; Engineering</td>
+            <td class="header-meta">Timetable — {{ label }}</td>
+        </tr>
+    </table>
+
+    <!-- Timetable Grid -->
+    <table class="timetable">
+        <thead>
+            <tr>
+                <th style="width: 9%;">Day</th>
+                <th style="width: 13.5%;">Period 1<br/><span style="font-weight: normal; font-size: 7px;">10:00 - 11:00</span></th>
+                <th style="width: 13.5%;">Period 2<br/><span style="font-weight: normal; font-size: 7px;">11:00 - 12:00</span></th>
+                <th style="width: 13.5%;">Period 3<br/><span style="font-weight: normal; font-size: 7px;">12:00 - 01:00</span></th>
+                <th class="lunch-cell">Lunch<br/><span style="font-weight: normal; font-size: 6.5px;">01:00 - 02:00</span></th>
+                <th style="width: 13.5%;">Period 4<br/><span style="font-weight: normal; font-size: 7px;">02:00 - 03:00</span></th>
+                <th style="width: 13.5%;">Period 5<br/><span style="font-weight: normal; font-size: 7px;">03:00 - 04:00</span></th>
+                <th style="width: 13.5%;">Period 6<br/><span style="font-weight: normal; font-size: 7px;">04:00 - 05:00</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day, period_dict in grid.items %}
+            <tr>
+                <td class="day-header">{{ day }}</td>
+                {% for period, cell in period_dict.items %}
+                    
+                    {% if cell.is_lab_block %}
+                        <!-- Merged 2-Period Lab Cell -->
+                        <td colspan="2">
+                            <div class="card lab">
+                                <span class="badge-lab">2-PERIOD LAB</span>
+                                <div class="subject-title">{{ cell.entry.subject.name }}</div>
+                                
+                                {% if role == 'student' or filter_type == 'batch' %}
+                                    <div class="meta-info">{{ cell.entry.teacher.name }}</div>
+                                {% elif role == 'teacher' or filter_type == 'teacher' %}
+                                    <div class="meta-info">Batch: {{ cell.entry.batch }}</div>
+                                {% else %}
+                                    <div class="meta-info">{{ cell.entry.teacher.name }} | Batch: {{ cell.entry.batch }}</div>
+                                {% endif %}
+
+                                {% if cell.entry.room %}
+                                    <div class="room-name">Room: {{ cell.entry.room.name }}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    {% elif not cell.is_skip %}
+                        <!-- Single Period Cell -->
+                        <td>
+                            {% if cell.entry %}
+                                <div class="card {% if cell.entry.subject.is_lab %}lab{% else %}theory{% endif %}">
+                                    <div class="subject-title">
+                                        {{ cell.entry.subject.name }}
+                                        {% if cell.entry.subject.is_lab %}<span style="color: #0f766e;">(LAB)</span>{% endif %}
+                                    </div>
+
+                                    {% if role == 'student' or filter_type == 'batch' %}
+                                        <div class="meta-info">{{ cell.entry.teacher.name }}</div>
+                                    {% elif role == 'teacher' or filter_type == 'teacher' %}
+                                        <div class="meta-info">Batch: {{ cell.entry.batch }}</div>
+                                    {% else %}
+                                        <div class="meta-info">{{ cell.entry.teacher.name }} | Batch: {{ cell.entry.batch }}</div>
+                                    {% endif %}
+
+                                    {% if cell.entry.room %}
+                                        <div class="room-name">Room: {{ cell.entry.room.name }}</div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="empty-slot">-</span>
+                            {% endif %}
+                        </td>
+                    {% endif %}
+
+                    <!-- Lunch Column Insertion after Period 3 -->
+                    {% if period == 3 %}
+                        <td class="lunch-cell">LUNCH</td>
+                    {% endif %}
+
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer-note">
+        Generated by CSE Timetable Management System
+    </div>
+
+</body>
+</html>

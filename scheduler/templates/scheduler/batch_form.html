@@ -1,0 +1,36 @@
+{% extends 'scheduler/base.html' %}
+{% block title %}Add Batch{% endblock %}
+
+{% block content %}
+<h3>Add Batch</h3>
+<form method="POST" class="bg-white p-4 rounded shadow-sm" style="max-width:400px;">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Department</label>
+        <select name="department" class="form-control" required>
+            {% for d in departments %}
+            <option value="{{ d.pk }}">{{ d.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Year</label>
+        <select name="year" class="form-control" required>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Section (e.g. A, B, CSE-1, CSE-2)</label>
+        <input type="text" name="section" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Strength (optional)</label>
+        <input type="number" name="strength" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="{% url 'batch_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

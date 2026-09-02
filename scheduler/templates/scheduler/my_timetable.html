@@ -1,0 +1,133 @@
+{% extends 'scheduler/base.html' %}
+
+{% block title %}{{ label }} | CSE Timetable System{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h3 class="card-title text-primary fw-bold mb-0">{{ label }}</h3>
+            {% if workload_note %}
+                <small class="text-muted fw-semibold">{{ workload_note }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="d-flex gap-2 align-items-center">
+            <!-- PDF Export Button -->
+            {% if role == 'teacher' %}
+                <a href="{% url 'timetable_export_pdf' %}?filter_type=teacher&filter_id={{ request.session.teacher_id }}" 
+                   class="btn btn-danger btn-sm d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-pdf" viewBox="0 0 16 16">
+                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                        <path d="M4.603 12.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.019.24-.274.69-.345 1.048-.345.547 0 1.173.187 1.876.514.62.288 1.308.514 2.052.648.744.134 1.488.16 2.18.067.692-.093 1.157-.384 1.353-.787.168-.345.093-.76-.14-1.018-.233-.258-.687-.334-1.127-.334-.547 0-1.205.138-1.95.426-.745.288-1.545.688-2.316 1.154-.77.465-1.468.995-2.008 1.545z"/>
+                    </svg>
+                    Download PDF
+                </a>
+            {% elif role == 'student' %}
+                <a href="{% url 'timetable_export_pdf' %}?filter_type=batch&filter_id={{ request.session.batch_id }}" 
+                   class="btn btn-danger btn-sm d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-pdf" viewBox="0 0 16 16">
+                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                        <path d="M4.603 12.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.019.24-.274.69-.345 1.048-.345.547 0 1.173.187 1.876.514.62.288 1.308.514 2.052.648.744.134 1.488.16 2.18.067.692-.093 1.157-.384 1.353-.787.168-.345.093-.76-.14-1.018-.233-.258-.687-.334-1.127-.334-.547 0-1.205.138-1.95.426-.745.288-1.545.688-2.316 1.154-.77.465-1.468.995-2.008 1.545z"/>
+                    </svg>
+                    Download PDF
+                </a>
+            {% endif %}
+
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+                Print Grid
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle mb-0" style="min-width: 850px; table-layout: fixed;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 10%;">Day</th>
+                        <th style="width: 14%;">10:00 - 11:00 (P1)</th>
+                        <th style="width: 14%;">11:00 - 12:00 (P2)</th>
+                        <th style="width: 14%;">12:00 - 01:00 (P3)</th>
+                        <th style="width: 5%;" class="bg-secondary text-white">Lunch</th>
+                        <th style="width: 14%;">02:00 - 03:00 (P4)</th>
+                        <th style="width: 14%;">03:00 - 04:00 (P5)</th>
+                        <th style="width: 14%;">04:00 - 05:00 (P6)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day, period_dict in grid.items %}
+                        <tr>
+                            <td class="fw-bold bg-light text-primary">{{ day }}</td>
+                            
+                            {% for period, cell in period_dict.items %}
+                                {% if cell.is_skip %}
+                                    <!-- Skip rendering cell because previous slot spanned across using colspan="2" -->
+                                {% elif cell.is_lab_block %}
+                                    <!-- Merged 2-Period Lab Box Span -->
+                                    {% with entry=cell.entry|default:cell %}
+                                    <td colspan="2" class="align-middle border-2 border-primary" style="background-color: #eef6ff;">
+                                        <div class="py-2">
+                                            <span class="badge bg-primary mb-1">2-Period Lab Block</span>
+                                            <div class="fw-bold text-primary fs-6">{{ entry.subject.name }}</div>
+                                            
+                                            {% if role == 'student' %}
+                                                <div class="text-dark font-monospace small">{{ entry.teacher.name }}</div>
+                                            {% elif role == 'teacher' %}
+                                                <div class="text-dark font-monospace small">Batch: {{ entry.batch }}</div>
+                                            {% endif %}
+
+                                            {% if entry.room %}
+                                                <span class="badge bg-dark mt-1">Room {{ entry.room.name }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    {% endwith %}
+                                {% else %}
+                                    <!-- Standard Single Period Cell -->
+                                    {% with entry=cell.entry|default:cell %}
+                                    <td class="align-middle {% if entry.subject %}table-primary{% endif %}">
+                                        {% if entry.subject %}
+                                            <div class="fw-bold text-dark">{{ entry.subject.name }}</div>
+                                            
+                                            {% if role == 'student' %}
+                                                <small class="text-muted d-block">{{ entry.teacher.name }}</small>
+                                            {% elif role == 'teacher' %}
+                                                <small class="text-muted d-block">Batch: {{ entry.batch }}</small>
+                                            {% endif %}
+
+                                            {% if entry.room %}
+                                                <small class="text-secondary fw-semibold d-block">Room {{ entry.room.name }}</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted opacity-50">-</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endwith %}
+                                {% endif %}
+
+                                <!-- Render Lunch Break Vertical Column strictly AFTER Period 3 -->
+                                {% if period == 3 or period == '3' %}
+                                    <td class="bg-light text-muted fw-bold align-middle p-0" style="writing-mode: vertical-lr; transform: rotate(180deg); min-width: 35px; letter-spacing: 2px;">
+                                        BREAK
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        nav, .btn, .card-header small, footer { display: none !important; }
+        .card { border: none !important; box-shadow: none !important; }
+        body { background-color: #fff !important; }
+        .table-responsive { overflow: visible !important; }
+        .table { table-layout: fixed !important; width: 100% !important; }
+    }
+</style>
+{% endblock %}

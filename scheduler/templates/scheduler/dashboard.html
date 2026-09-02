@@ -1,0 +1,40 @@
+{% extends 'scheduler/base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">Dashboard</h3>
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h2>{{ stats.departments }}</h2>
+                <p class="text-muted mb-0">Departments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h2>{{ stats.batches }}</h2>
+                <p class="text-muted mb-0">Batches</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h2>{{ stats.teachers }}</h2>
+                <p class="text-muted mb-0">Teachers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h2>{{ stats.rooms }}</h2>
+                <p class="text-muted mb-0">Rooms</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

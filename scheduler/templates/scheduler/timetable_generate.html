@@ -1,0 +1,57 @@
+{% extends 'scheduler/base.html' %}
+{% block title %}Generate Timetable | CSE Timetable System{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm col-md-8 mx-auto mt-4">
+    <div class="card-body text-center py-5">
+        <h3 class="fw-bold mb-3">Generate Timetable</h3>
+        <p class="text-muted col-md-10 mx-auto">
+            This will run the backtracking scheduling engine using your configured Subjects, Teachers, and Rooms.
+            Any existing timetable entries will be replaced.
+        </p>
+
+        <!-- Triggers the Confirmation Modal instead of submitting directly -->
+        <button type="button" class="btn btn-warning btn-lg px-4 fw-bold mt-3" data-bs-toggle="modal" data-bs-target="#confirmGenerateModal">
+            ⚡ Generate Timetable
+        </button>
+    </div>
+</div>
+
+<!-- Confirmation & Safety Modal -->
+<div class="modal fade" id="confirmGenerateModal" tabindex="-1" aria-labelledby="confirmGenerateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold" id="confirmGenerateModalLabel">⚠️ Confirm Regeneration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start">
+                <p class="mb-2"><strong>Are you sure you want to regenerate the timetable?</strong></p>
+                <p class="text-danger small mb-0">
+                    This action will <strong>permanently overwrite</strong> the currently active timetable and any manual drag-and-drop adjustments you have made.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                
+                <form method="POST" action="{% url 'timetable_generate' %}" id="generateForm" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" id="generateBtn" class="btn btn-danger fw-bold">
+                        Yes, Overwrite & Regenerate
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('generateForm').addEventListener('submit', function() {
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
+});
+</script>
+{% endblock %}

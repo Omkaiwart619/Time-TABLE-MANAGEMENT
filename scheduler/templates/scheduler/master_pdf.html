@@ -1,0 +1,89 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    @page {
+        size: letter landscape;
+        margin: 1cm;
+    }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; }
+    h2 { text-align: center; margin-bottom: 2px; font-size: 16px; color: #1e293b; }
+    h3 { text-align: center; color: #2563eb; margin-top: 2px; margin-bottom: 10px; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 5px; table-layout: fixed; }
+    th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-size: 9px; vertical-align: middle; }
+    th { background-color: #2563eb; color: white; font-weight: bold; }
+    .lunch { background-color: #f1f5f9; color: #64748b; font-weight: bold; width: 4%; }
+    .lab { background-color: #f0fdf4; color: #166534; }
+    .theory { background-color: #eff6ff; color: #1e40af; }
+    .page-break { page-break-before: always; }
+    .badge-lab { background-color: #166534; color: #ffffff; padding: 1px 4px; font-size: 7px; border-radius: 2px; }
+</style>
+</head>
+<body>
+    {% for item in batch_grids %}
+    <div class="{% if not forloop.first %}page-break{% endif %}">
+        <h2>{{ department.name }} Department</h2>
+        <h3>Batch: {{ item.batch }}</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Day</th>
+                    <th style="width: 14%;">10:00 - 11:00</th>
+                    <th style="width: 14%;">11:00 - 12:00</th>
+                    <th style="width: 14%;">12:00 - 01:00</th>
+                    <th class="lunch">Lunch</th>
+                    <th style="width: 14%;">02:00 - 03:00</th>
+                    <th style="width: 14%;">03:00 - 04:00</th>
+                    <th style="width: 14%;">04:00 - 05:00</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day, period_dict in item.grid.items %}
+                <tr>
+                    <td><strong>{{ day }}</strong></td>
+                    
+                    {% for period, cell in period_dict.items %}
+                        <!-- Lunch Break after Period 3 -->
+                        {% if period == 4 %}
+                            <td class="lunch">B<br>R<br>E<br>A<br>K</td>
+                        {% endif %}
+
+                        {% if cell.is_lab_block %}
+                            <!-- Merged 2-Period Lab Cell -->
+                            <td colspan="2" class="lab">
+                                <span class="badge-lab">LAB BLOCK</span><br>
+                                <strong>{{ cell.entry.subject.name }}</strong><br>
+                                {% if item.role == 'teacher' %}
+                                    Batch: {{ cell.entry.batch }}<br>
+                                {% else %}
+                                    {{ cell.entry.teacher.name }}<br>
+                                {% endif %}
+                                <em>Room: {{ cell.entry.room.name }}</em>
+                            </td>
+                        {% elif not cell.is_skip %}
+                            <!-- Single Period Cell -->
+                            {% if cell.entry %}
+                                <td class="{% if cell.entry.subject.is_lab %}lab{% else %}theory{% endif %}">
+                                    <strong>{{ cell.entry.subject.name }}</strong><br>
+                                    {% if item.role == 'teacher' %}
+                                        Batch: {{ cell.entry.batch }}<br>
+                                    {% else %}
+                                        {{ cell.entry.teacher.name }}<br>
+                                    {% endif %}
+                                    <em>Room: {{ cell.entry.room.name }}</em>
+                                </td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</body>
+</html>

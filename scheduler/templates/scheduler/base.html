@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CSE Timetable System{% endblock %}</title>
+    
+    <!-- Anti-flash Script: Only apply dark theme if logged in user is Admin -->
+    <script>
+        (function() {
+            const userRole = "{{ request.session.role|default:'' }}";
+            const savedTheme = localStorage.getItem('theme');
+            
+            // Dark mode is only allowed/enabled if the user role is 'admin'
+            if (userRole === 'admin' && (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches))) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        })();
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables for Light & Dark Modes */
+        :root {
+            --bg-main: #f4f6f9;
+            --bg-card: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --table-stripe: #f8f9fa;
+            --table-hover: #ecefe1;
+            --input-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #121212;
+            --bg-card: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333333;
+            --table-stripe: #242424;
+            --table-hover: #2c2c2c;
+            --input-bg: #2b2b2b;
+        }
+
+        /* Core Elements */
+        body {
+            background-color: var(--bg-main) !important;
+            color: var(--text-color) !important;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* Cards, Containers & Content Wrappers */
+        .card, .modal-content, .list-group-item {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+
+        .card-header, .card-footer {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+
+        /* Tables */
+        .table {
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .table th, .table td {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+
+        .table-striped > tbody > tr:nth-of-type(odd) > * {
+            background-color: var(--table-stripe) !important;
+            color: var(--text-color) !important;
+        }
+
+        .table-hover > tbody > tr:hover > * {
+            background-color: var(--table-hover) !important;
+            color: var(--text-color) !important;
+        }
+
+        /* Forms & Interactive Fields */
+        .form-control, .form-select {
+            background-color: var(--input-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--input-bg) !important;
+            color: var(--text-color) !important;
+            border-color: #0d6efd !important;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        /* Dark Mode Specific Adjustments for Bootstrap Utility Classes */
+        [data-theme="dark"] .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        [data-theme="dark"] .text-dark {
+            color: var(--text-color) !important;
+        }
+
+        [data-theme="dark"] .bg-white {
+            background-color: var(--bg-card) !important;
+        }
+
+        [data-theme="dark"] .bg-light {
+            background-color: #2a2a2a !important;
+            color: var(--text-color) !important;
+        }
+    </style>
+</head>
+<body>
+
+    {% if request.session.logged_in %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            {% if request.session.role == 'admin' %}
+                <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">CSE Timetable System</a>
+            {% else %}
+                <a class="navbar-brand fw-bold" href="{% url 'my_timetable' %}">CSE Timetable System</a>
+            {% endif %}
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if request.session.role == 'admin' %}
+                        <!-- Admin Navigation -->
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'dashboard' %}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'department_list' %}">Departments</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'batch_list' %}">Batches</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'room_list' %}">Rooms</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'teacher_list' %}">Teachers</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'subject_list' %}">Subjects</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'timetable_generate' %}">Generate</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'timetable_view' %}">Full Timetable</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'master_pdf_export' %}">Master Export</a>
+                        </li>
+                    {% else %}
+                        <!-- Student & Teacher Navigation -->
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-bold" href="{% url 'my_timetable' %}">My Timetable</a>
+                        </li>
+                    {% endif %}
+                </ul>
+
+                <!-- User Session Info & Optional Admin Theme Toggle -->
+                <div class="d-flex align-items-center text-white">
+                    {% if request.session.role == 'admin' %}
+                    <button id="theme-toggle" class="btn btn-outline-light btn-sm me-3 d-flex align-items-center gap-1" type="button" aria-label="Toggle Theme">
+                        <span id="theme-toggle-icon">🌙</span>
+                        <span id="theme-toggle-text">Dark Mode</span>
+                    </button>
+                    {% endif %}
+                    
+                    <span class="me-3 badge bg-light text-primary fs-6 text-capitalize">
+                        {{ request.session.username }} ({{ request.session.role }})
+                    </span>
+                    <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Theme Switcher Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userRole = "{{ request.session.role|default:'' }}";
+            const toggleBtn = document.getElementById('theme-toggle');
+            const toggleIcon = document.getElementById('theme-toggle-icon');
+            const toggleText = document.getElementById('theme-toggle-text');
+
+            // Hard enforce light mode for non-admin sessions (teachers, students, login page)
+            if (userRole !== 'admin') {
+                document.documentElement.removeAttribute('data-theme');
+                return;
+            }
+
+            if (!toggleBtn) return;
+
+            function updateToggleUI(theme) {
+                if (theme === 'dark') {
+                    toggleIcon.textContent = '☀️';
+                    toggleText.textContent = 'Light Mode';
+                } else {
+                    toggleIcon.textContent = '🌙';
+                    toggleText.textContent = 'Dark Mode';
+                }
+            }
+
+            const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            updateToggleUI(activeTheme);
+
+            toggleBtn.addEventListener('click', function () {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                if (currentTheme === 'dark') {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                    updateToggleUI('light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    updateToggleUI('dark');
+                }
+            });
+        });
+    </script>
+
+    <!-- Global Client-Side Table Filter Script -->
+    <script>
+    function filterTable() {
+        const input = document.getElementById("tableSearchInput");
+        if (!input) return;
+        
+        const filter = input.value.toLowerCase().trim();
+        const table = document.getElementById("dataTable");
+        if (!table) return;
+
+        // Target data rows while excluding no-results / empty placeholders
+        const rows = table.querySelectorAll("tbody tr:not(#noResultsRow):not(#emptyRow)");
+        const noResultsRow = document.getElementById("noResultsRow");
+        
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            // Ignore the last column (Action buttons) during live text matching
+            const cells = Array.from(row.getElementsByTagName("td")).slice(0, -1);
+            const matches = cells.some(cell => cell.textContent.toLowerCase().includes(filter));
+            
+            if (matches) {
+                row.style.display = "";
+                visibleCount++;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        // Toggle global 'no matching results' row if available in child template
+        if (noResultsRow) {
+            noResultsRow.style.display = (visibleCount === 0 && filter !== "") ? "" : "none";
+        }
+    }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
